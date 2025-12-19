@@ -1,12 +1,22 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Member, Car } from '@/types';
 import MemberInput from '@/components/MemberInput';
 import TeamSection from '@/components/TeamSection';
 import CarManagement from '@/components/CarManagement';
 import DownloadView from '@/components/DownloadView';
 import { toPng } from 'html-to-image';
+
+const STORAGE_KEY = 'airsoft-team-splitter-data';
+
+interface SavedData {
+  allMembers: Member[];
+  redTeam: Member[];
+  greenTeam: Member[];
+  cars: Car[];
+  assignedToCarIds: string[];
+}
 
 export default function Home() {
   const [allMembers, setAllMembers] = useState<Member[]>([]);
@@ -15,8 +25,44 @@ export default function Home() {
   const [cars, setCars] = useState<Car[]>([]);
   const [assignedToCarIds, setAssignedToCarIds] = useState<Set<string>>(new Set());
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const downloadViewRef = useRef<HTMLDivElement>(null);
+
+  // Load data from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const data: SavedData = JSON.parse(saved);
+        setAllMembers(data.allMembers || []);
+        setRedTeam(data.redTeam || []);
+        setGreenTeam(data.greenTeam || []);
+        setCars(data.cars || []);
+        setAssignedToCarIds(new Set(data.assignedToCarIds || []));
+      }
+    } catch (e) {
+      console.error('Failed to load saved data:', e);
+    }
+    setIsLoaded(true);
+  }, []);
+
+  // Save data to localStorage whenever it changes
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
+      const data: SavedData = {
+        allMembers,
+        redTeam,
+        greenTeam,
+        cars,
+        assignedToCarIds: Array.from(assignedToCarIds),
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (e) {
+      console.error('Failed to save data:', e);
+    }
+  }, [isLoaded, allMembers, redTeam, greenTeam, cars, assignedToCarIds]);
 
   const handleAddMembers = useCallback((newMembers: Member[]) => {
     setAllMembers(prev => [...prev, ...newMembers]);
@@ -74,6 +120,17 @@ export default function Home() {
       newSet.delete(memberId);
       return newSet;
     });
+  }, []);
+
+  const handleReset = useCallback(() => {
+    if (confirm('すべてのデータをリセットしますか？')) {
+      setAllMembers([]);
+      setRedTeam([]);
+      setGreenTeam([]);
+      setCars([]);
+      setAssignedToCarIds(new Set());
+      localStorage.removeItem(STORAGE_KEY);
+    }
   }, []);
 
   const handleDownloadAll = async () => {
@@ -221,6 +278,14 @@ export default function Home() {
                     💡 ✏️アイコンをクリックで名前を編集
                   </p>
                 </div>
+
+                {/* Reset Button */}
+                <button
+                  onClick={handleReset}
+                  className="mt-4 w-full text-sm text-[#ff3b30] hover:text-[#ff3b30]/70 py-2 transition-colors"
+                >
+                  🗑️ すべてリセット
+                </button>
               </div>
             )}
           </div>
