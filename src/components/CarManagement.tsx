@@ -90,7 +90,7 @@ export default function CarManagement({
       driver: null,
       passengers: [null],
     };
-    onUpdateCars([...cars, newCar]);
+    onUpdateCars([newCar, ...cars]);
   };
 
   const handleRemoveCar = (carId: string) => {
