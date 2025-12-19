@@ -206,7 +206,7 @@ export default function Home() {
                 {/* Tip */}
                 <div className="mt-4 pt-4 border-t border-[#e5e5ea]">
                   <p className="text-xs text-[#8e8e93]">
-                    💡 名前をダブルクリックで編集できます
+                    💡 ✏️アイコンをクリックで名前を編集
                   </p>
                 </div>
               </div>

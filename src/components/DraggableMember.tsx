@@ -40,11 +40,10 @@ export default function DraggableMember({ member, teamColor, onNameChange }: Dra
     }
   }, [isEditing]);
 
-  const handleDoubleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsEditing(true);
+  // Update editName when member.name changes externally
+  useEffect(() => {
     setEditName(member.name);
-  };
+  }, [member.name]);
 
   const handleBlur = () => {
     setIsEditing(false);
@@ -64,14 +63,20 @@ export default function DraggableMember({ member, teamColor, onNameChange }: Dra
     }
   };
 
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setIsEditing(true);
+    setEditName(member.name);
+  };
+
   return (
     <div
       ref={setNodeRef}
       style={style}
       {...(isEditing ? {} : listeners)}
       {...(isEditing ? {} : attributes)}
-      onDoubleClick={handleDoubleClick}
-      className={`member-card ${getBorderStyle()} ${isDragging ? 'dragging' : ''} ${isEditing ? 'editing' : ''}`}
+      className={`member-card ${getBorderStyle()} ${isDragging ? 'dragging' : ''} ${isEditing ? 'editing' : ''} flex items-center justify-between gap-2`}
     >
       {isEditing ? (
         <input
@@ -81,10 +86,24 @@ export default function DraggableMember({ member, teamColor, onNameChange }: Dra
           onChange={(e) => setEditName(e.target.value)}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
-          className="editable-input"
+          className="editable-input flex-1"
+          onClick={(e) => e.stopPropagation()}
         />
       ) : (
-        <span>{member.name}</span>
+        <>
+          <span className="flex-1 select-none">{member.name}</span>
+          <button
+            onClick={handleEditClick}
+            onPointerDown={(e) => e.stopPropagation()}
+            className="text-[#8e8e93] hover:text-[#007aff] p-1 rounded transition-colors"
+            title="名前を編集"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+              <path d="m15 5 4 4"/>
+            </svg>
+          </button>
+        </>
       )}
     </div>
   );
