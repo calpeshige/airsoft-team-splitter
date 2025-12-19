@@ -1,8 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f5f5f5;
-  --foreground: #171717;
+  --background: #f5f5f7;
+  --foreground: #1d1d1f;
+  --apple-blue: #007aff;
+  --apple-green: #34c759;
+  --apple-red: #ff3b30;
+  --apple-orange: #ff9500;
+  --apple-gray: #8e8e93;
+  --apple-light-gray: #f2f2f7;
+  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --card-shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
 @theme inline {
@@ -12,59 +20,245 @@
   --font-mono: var(--font-geist-mono);
 }
 
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.5;
 }
 
+/* Apple-style Cards */
+.apple-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px;
+  box-shadow: var(--card-shadow);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.apple-card:hover {
+  box-shadow: var(--card-shadow-hover);
+}
+
+/* Team Cards */
 .team-red {
-  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-  border: 2px solid #ef4444;
+  background: linear-gradient(145deg, rgba(255, 59, 48, 0.08) 0%, rgba(255, 59, 48, 0.15) 100%);
+  border: 1px solid rgba(255, 59, 48, 0.3);
+  border-radius: 16px;
 }
 
 .team-green {
-  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-  border: 2px solid #22c55e;
+  background: linear-gradient(145deg, rgba(52, 199, 89, 0.08) 0%, rgba(52, 199, 89, 0.15) 100%);
+  border: 1px solid rgba(52, 199, 89, 0.3);
+  border-radius: 16px;
 }
 
+/* Member Cards */
 .member-card {
   background: white;
-  border-radius: 8px;
-  padding: 8px 16px;
-  margin: 4px;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin: 6px 0;
   cursor: grab;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  font-weight: 500;
+  font-size: 15px;
 }
 
 .member-card:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px) scale(1.02);
+}
+
+.member-card:active {
+  transform: scale(0.98);
 }
 
 .member-card.dragging {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: grabbing;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
+.member-card.editing {
+  cursor: text;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.3);
+}
+
+/* Car Cards */
 .car-card {
   background: white;
-  border-radius: 12px;
-  padding: 16px;
-  margin: 8px 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  padding: 20px;
+  margin: 12px 0;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
+.car-card:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Drop Zone */
 .drop-zone {
-  min-height: 40px;
-  border: 2px dashed #ccc;
-  border-radius: 8px;
-  padding: 8px;
+  min-height: 48px;
+  border: 2px dashed rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  padding: 12px;
   transition: all 0.2s ease;
+  background: rgba(0, 0, 0, 0.02);
 }
 
 .drop-zone.active {
-  border-color: #3b82f6;
-  background: #eff6ff;
+  border-color: var(--apple-blue);
+  background: rgba(0, 122, 255, 0.08);
+}
+
+/* Apple-style Buttons */
+.apple-button {
+  background: var(--apple-blue);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 24px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+}
+
+.apple-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 122, 255, 0.4);
+}
+
+.apple-button:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.apple-button:disabled {
+  background: var(--apple-gray);
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.apple-button-secondary {
+  background: rgba(0, 122, 255, 0.1);
+  color: var(--apple-blue);
+  box-shadow: none;
+}
+
+.apple-button-secondary:hover {
+  background: rgba(0, 122, 255, 0.15);
+  box-shadow: none;
+}
+
+/* Gradient Button */
+.apple-button-gradient {
+  background: linear-gradient(135deg, var(--apple-red) 0%, var(--apple-green) 100%);
+  box-shadow: 0 4px 12px rgba(255, 59, 48, 0.2);
+}
+
+.apple-button-gradient:hover {
+  box-shadow: 0 6px 20px rgba(255, 59, 48, 0.3);
+}
+
+/* Input Styles */
+.apple-input {
+  background: rgba(0, 0, 0, 0.04);
+  border: none;
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 17px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.apple-input:focus {
+  background: white;
+  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.2);
+}
+
+.apple-input::placeholder {
+  color: var(--apple-gray);
+}
+
+/* Section Headers */
+.section-header {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--foreground);
+}
+
+.section-subheader {
+  font-size: 17px;
+  color: var(--apple-gray);
+  font-weight: 400;
+}
+
+/* Status Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.badge-red {
+  background: rgba(255, 59, 48, 0.15);
+  color: var(--apple-red);
+}
+
+.badge-green {
+  background: rgba(52, 199, 89, 0.15);
+  color: var(--apple-green);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* Editable Input */
+.editable-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  font: inherit;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+.editable-input:focus {
+  background: rgba(0, 122, 255, 0.05);
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin: -2px -4px;
 }

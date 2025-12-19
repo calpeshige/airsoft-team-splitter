@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { Member, Car } from '@/types';
 import MemberInput from '@/components/MemberInput';
 import TeamSection from '@/components/TeamSection';
 import CarManagement from '@/components/CarManagement';
+import { toPng } from 'html-to-image';
 
 export default function Home() {
   const [allMembers, setAllMembers] = useState<Member[]>([]);
@@ -12,16 +13,16 @@ export default function Home() {
   const [greenTeam, setGreenTeam] = useState<Member[]>([]);
   const [cars, setCars] = useState<Car[]>([]);
   const [assignedToCarIds, setAssignedToCarIds] = useState<Set<string>>(new Set());
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const downloadContainerRef = useRef<HTMLDivElement>(null);
 
   const handleAddMembers = useCallback((newMembers: Member[]) => {
     setAllMembers(prev => [...prev, ...newMembers]);
   }, []);
 
   const handleSplitTeams = useCallback(() => {
-    // Shuffle all members
     const shuffled = [...allMembers].sort(() => Math.random() - 0.5);
-
-    // Split into two teams
     const midpoint = Math.ceil(shuffled.length / 2);
     setRedTeam(shuffled.slice(0, midpoint));
     setGreenTeam(shuffled.slice(midpoint));
@@ -43,10 +44,19 @@ export default function Home() {
     }
   }, [redTeam, greenTeam]);
 
+  const handleNameChange = useCallback((memberId: string, newName: string) => {
+    setAllMembers(prev => prev.map(m => m.id === memberId ? { ...m, name: newName } : m));
+    setRedTeam(prev => prev.map(m => m.id === memberId ? { ...m, name: newName } : m));
+    setGreenTeam(prev => prev.map(m => m.id === memberId ? { ...m, name: newName } : m));
+    setCars(prev => prev.map(car => ({
+      ...car,
+      driver: car.driver?.id === memberId ? { ...car.driver, name: newName } : car.driver,
+      passengers: car.passengers.map(p => p?.id === memberId ? { ...p, name: newName } : p),
+    })));
+  }, []);
+
   const handleUpdateCars = useCallback((newCars: Car[]) => {
     setCars(newCars);
-
-    // Update assigned member IDs
     const newAssignedIds = new Set<string>();
     newCars.forEach(car => {
       if (car.driver) newAssignedIds.add(car.driver.id);
@@ -65,31 +75,105 @@ export default function Home() {
     });
   }, []);
 
-  // Members available for car assignment (not yet in a car)
+  const handleDownloadAll = async () => {
+    if (!downloadContainerRef.current) return;
+
+    setIsDownloading(true);
+    try {
+      const dataUrl = await toPng(downloadContainerRef.current, {
+        quality: 0.95,
+        backgroundColor: '#f5f5f7',
+        pixelRatio: 2,
+      });
+
+      const link = document.createElement('a');
+      link.download = `サバゲー編成_${new Date().toLocaleDateString('ja-JP')}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (error) {
+      console.error('画像のダウンロードに失敗しました:', error);
+    }
+    setIsDownloading(false);
+  };
+
   const availableForCars = allMembers.filter(m => !assignedToCarIds.has(m.id));
+  const hasMembers = redTeam.length > 0 || greenTeam.length > 0;
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
-      <div className="max-w-7xl mx-auto px-4">
+    <div className="min-h-screen bg-[#f5f5f7] py-10">
+      <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
-        <header className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+        <header className="text-center mb-10">
+          <h1 className="text-4xl font-bold text-[#1d1d1f] tracking-tight mb-2">
             サバゲーチーム分け
           </h1>
-          <p className="text-gray-600">
+          <p className="text-[#8e8e93] text-lg">
             メンバーを入力してチーム分け・配車を管理
           </p>
         </header>
 
-        {/* Main Content - Team Section Left, Input Right */}
+        {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
           {/* Team Section (Left - 3 columns) */}
           <div className="lg:col-span-3">
-            <TeamSection
-              redTeam={redTeam}
-              greenTeam={greenTeam}
-              onMoveToTeam={handleMoveToTeam}
-            />
+            <div ref={downloadContainerRef} className="space-y-6">
+              {/* Teams */}
+              <TeamSection
+                redTeam={redTeam}
+                greenTeam={greenTeam}
+                onMoveToTeam={handleMoveToTeam}
+                onNameChange={handleNameChange}
+              />
+
+              {/* Car Management - included in download */}
+              {allMembers.length > 0 && (
+                <CarManagement
+                  availableMembers={availableForCars}
+                  cars={cars}
+                  onUpdateCars={handleUpdateCars}
+                  onRemoveMemberFromCar={handleRemoveMemberFromCar}
+                />
+              )}
+            </div>
+
+            {/* Download Button - outside the download area */}
+            {hasMembers && (
+              <button
+                onClick={handleDownloadAll}
+                disabled={isDownloading}
+                className="apple-button w-full mt-6 flex items-center justify-center gap-3"
+                style={{ background: '#8e44ad' }}
+              >
+                {isDownloading ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                      />
+                    </svg>
+                    ダウンロード中...
+                  </>
+                ) : (
+                  <>
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    チーム編成＋配車をダウンロード
+                  </>
+                )}
+              </button>
+            )}
           </div>
 
           {/* Member Input (Right - 1 column) */}
@@ -102,27 +186,33 @@ export default function Home() {
 
             {/* Member Count Info */}
             {allMembers.length > 0 && (
-              <div className="mt-4 bg-white rounded-lg p-4 shadow">
-                <h3 className="font-semibold text-gray-700 mb-2">メンバー情報</h3>
-                <div className="text-sm text-gray-600 space-y-1">
-                  <p>総人数: {allMembers.length}人</p>
-                  <p className="text-red-600">赤チーム: {redTeam.length}人</p>
-                  <p className="text-green-600">緑チーム: {greenTeam.length}人</p>
+              <div className="mt-4 apple-card p-5">
+                <h3 className="font-semibold text-[#1d1d1f] mb-3">メンバー情報</h3>
+                <div className="text-sm space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#8e8e93]">総人数</span>
+                    <span className="font-semibold text-[#1d1d1f]">{allMembers.length}人</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#8e8e93]">赤チーム</span>
+                    <span className="badge badge-red">{redTeam.length}人</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#8e8e93]">緑チーム</span>
+                    <span className="badge badge-green">{greenTeam.length}人</span>
+                  </div>
+                </div>
+
+                {/* Tip */}
+                <div className="mt-4 pt-4 border-t border-[#e5e5ea]">
+                  <p className="text-xs text-[#8e8e93]">
+                    💡 名前をダブルクリックで編集できます
+                  </p>
                 </div>
               </div>
             )}
           </div>
         </div>
-
-        {/* Car Management Section */}
-        {allMembers.length > 0 && (
-          <CarManagement
-            availableMembers={availableForCars}
-            cars={cars}
-            onUpdateCars={handleUpdateCars}
-            onRemoveMemberFromCar={handleRemoveMemberFromCar}
-          />
-        )}
       </div>
     </div>
   );

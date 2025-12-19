@@ -1,6 +1,6 @@
 'use client';
 
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, useDroppable } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, useDroppable, useDraggable } from '@dnd-kit/core';
 import { Member, Car } from '@/types';
 import { useState } from 'react';
 
@@ -9,6 +9,7 @@ interface CarManagementProps {
   cars: Car[];
   onUpdateCars: (cars: Car[]) => void;
   onRemoveMemberFromCar: (memberId: string) => void;
+  downloadRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 function DroppableSlot({
@@ -27,30 +28,30 @@ function DroppableSlot({
   return (
     <div
       ref={setNodeRef}
-      className={`min-w-[120px] p-2 rounded-lg border-2 transition-all ${
+      className={`min-w-[130px] p-3 rounded-xl transition-all ${
         isOver
-          ? 'border-blue-500 bg-blue-50'
+          ? 'bg-[#007aff]/10 border-2 border-[#007aff]'
           : member
           ? isDriver
-            ? 'border-yellow-400 bg-yellow-50'
-            : 'border-gray-300 bg-gray-50'
-          : 'border-dashed border-gray-300'
+            ? 'bg-[#ff9500]/10 border-2 border-[#ff9500]/30'
+            : 'bg-[#f2f2f7] border-2 border-transparent'
+          : 'border-2 border-dashed border-[#8e8e93]/30 bg-[#f2f2f7]/50'
       }`}
     >
-      <div className="text-xs text-gray-500 mb-1">{label}</div>
+      <div className="text-xs text-[#8e8e93] mb-1 font-medium">{label}</div>
       {member ? (
-        <div className={`text-sm font-medium ${isDriver ? 'text-yellow-700' : 'text-gray-700'}`}>
+        <div className={`text-sm font-semibold ${isDriver ? 'text-[#ff9500]' : 'text-[#1d1d1f]'}`}>
           {isDriver && '🚗 '}{member.name}
         </div>
       ) : (
-        <div className="text-sm text-gray-400">ドロップ</div>
+        <div className="text-sm text-[#8e8e93]/60">ドロップ</div>
       )}
     </div>
   );
 }
 
 function DraggableCarMember({ member }: { member: Member }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = require('@dnd-kit/core').useDraggable({
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `car-${member.id}`,
     data: { member, fromCar: true },
   });
@@ -65,8 +66,8 @@ function DraggableCarMember({ member }: { member: Member }) {
       style={style}
       {...listeners}
       {...attributes}
-      className={`bg-white border rounded-lg px-3 py-2 cursor-grab shadow-sm hover:shadow-md transition-shadow ${
-        isDragging ? 'opacity-50' : ''
+      className={`bg-white border border-[#e5e5ea] rounded-xl px-4 py-2.5 cursor-grab shadow-sm hover:shadow-md transition-all font-medium text-sm ${
+        isDragging ? 'opacity-50 shadow-lg' : ''
       }`}
     >
       {member.name}
@@ -79,6 +80,7 @@ export default function CarManagement({
   cars,
   onUpdateCars,
   onRemoveMemberFromCar,
+  downloadRef,
 }: CarManagementProps) {
   const [activeMember, setActiveMember] = useState<Member | null>(null);
 
@@ -114,13 +116,16 @@ export default function CarManagement({
   };
 
   const handleRemovePassengerSlot = (carId: string, index: number) => {
+    const car = cars.find(c => c.id === carId);
+    if (car) {
+      const passenger = car.passengers[index];
+      if (passenger) {
+        onRemoveMemberFromCar(passenger.id);
+      }
+    }
     onUpdateCars(
       cars.map(car => {
         if (car.id === carId) {
-          const passenger = car.passengers[index];
-          if (passenger) {
-            onRemoveMemberFromCar(passenger.id);
-          }
           const newPassengers = car.passengers.filter((_, i) => i !== index);
           return { ...car, passengers: newPassengers.length > 0 ? newPassengers : [null] };
         }
@@ -149,76 +154,88 @@ export default function CarManagement({
 
     if (parts[0] === 'driver') {
       const carId = parts.slice(1).join('-');
-      onUpdateCars(
-        cars.map(car => {
-          if (car.id === carId) {
-            const oldDriver = car.driver;
-            if (oldDriver) onRemoveMemberFromCar(oldDriver.id);
-            return { ...car, driver: member };
-          }
-          return car;
-        })
-      );
+
+      // First, remove from old position if from car
+      let updatedCars = [...cars];
       if (fromCar) {
-        // Remove from old position
-        onUpdateCars(
-          cars.map(car => {
-            if (car.driver?.id === member.id && car.id !== carId) {
-              return { ...car, driver: null };
-            }
-            return {
-              ...car,
-              passengers: car.passengers.map(p => (p?.id === member.id ? null : p)),
-            };
-          })
-        );
+        updatedCars = updatedCars.map(car => {
+          let newCar = { ...car };
+          if (car.driver?.id === member.id) {
+            newCar = { ...newCar, driver: null };
+          }
+          newCar = {
+            ...newCar,
+            passengers: car.passengers.map(p => (p?.id === member.id ? null : p)),
+          };
+          return newCar;
+        });
       }
+
+      // Then place in new position
+      updatedCars = updatedCars.map(car => {
+        if (car.id === carId) {
+          const oldDriver = car.driver;
+          if (oldDriver && oldDriver.id !== member.id) {
+            onRemoveMemberFromCar(oldDriver.id);
+          }
+          return { ...car, driver: member };
+        }
+        return car;
+      });
+
+      onUpdateCars(updatedCars);
+
     } else if (parts[0] === 'passenger') {
       const carId = parts.slice(1, -1).join('-');
       const passengerIndex = parseInt(parts[parts.length - 1]);
-      onUpdateCars(
-        cars.map(car => {
-          if (car.id === carId) {
-            const newPassengers = [...car.passengers];
-            const oldPassenger = newPassengers[passengerIndex];
-            if (oldPassenger) onRemoveMemberFromCar(oldPassenger.id);
-            newPassengers[passengerIndex] = member;
-            return { ...car, passengers: newPassengers };
-          }
-          return car;
-        })
-      );
+
+      // First, remove from old position if from car
+      let updatedCars = [...cars];
       if (fromCar) {
-        onUpdateCars(
-          cars.map(car => {
-            if (car.driver?.id === member.id) {
-              return { ...car, driver: null };
-            }
-            return {
-              ...car,
-              passengers: car.passengers.map((p, i) => {
-                if (p?.id === member.id && !(car.id === carId && i === passengerIndex)) {
-                  return null;
-                }
-                return p;
-              }),
-            };
-          })
-        );
+        updatedCars = updatedCars.map(car => {
+          let newCar = { ...car };
+          if (car.driver?.id === member.id) {
+            newCar = { ...newCar, driver: null };
+          }
+          newCar = {
+            ...newCar,
+            passengers: car.passengers.map(p => (p?.id === member.id ? null : p)),
+          };
+          return newCar;
+        });
       }
+
+      // Then place in new position
+      updatedCars = updatedCars.map(car => {
+        if (car.id === carId) {
+          const newPassengers = [...car.passengers];
+          const oldPassenger = newPassengers[passengerIndex];
+          if (oldPassenger && oldPassenger.id !== member.id) {
+            onRemoveMemberFromCar(oldPassenger.id);
+          }
+          newPassengers[passengerIndex] = member;
+          return { ...car, passengers: newPassengers };
+        }
+        return car;
+      });
+
+      onUpdateCars(updatedCars);
+
     } else if (targetId === 'available-members') {
       // Return member to available list
       if (fromCar) {
         onRemoveMemberFromCar(member.id);
         onUpdateCars(
           cars.map(car => {
+            let newCar = { ...car };
             if (car.driver?.id === member.id) {
-              return { ...car, driver: null };
+              newCar = { ...newCar, driver: null };
             }
-            return {
-              ...car,
+            newCar = {
+              ...newCar,
               passengers: car.passengers.map(p => (p?.id === member.id ? null : p)),
             };
+            return newCar;
           })
         );
       }
@@ -230,12 +247,15 @@ export default function CarManagement({
   });
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold text-gray-800">配車管理</h2>
+    <div ref={downloadRef} className="apple-card p-6">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h2 className="section-header text-xl">配車管理</h2>
+          <p className="section-subheader text-sm mt-1">メンバーをドラッグして配置</p>
+        </div>
         <button
           onClick={handleAddCar}
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
+          className="apple-button text-sm py-2.5 px-5"
         >
           + 車を追加
         </button>
@@ -245,14 +265,14 @@ export default function CarManagement({
         {/* Available Members */}
         <div
           ref={setAvailableRef}
-          className={`mb-6 p-4 rounded-lg border-2 transition-all ${
-            isOverAvailable ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-gray-50'
+          className={`mb-6 p-5 rounded-2xl transition-all ${
+            isOverAvailable ? 'bg-[#34c759]/10 border-2 border-[#34c759]' : 'bg-[#f2f2f7] border-2 border-transparent'
           }`}
         >
-          <h3 className="text-sm font-semibold text-gray-600 mb-3">未配置メンバー</h3>
-          <div className="flex flex-wrap gap-2 min-h-[40px]">
+          <h3 className="text-sm font-semibold text-[#8e8e93] mb-4">未配置メンバー</h3>
+          <div className="flex flex-wrap gap-3 min-h-[48px]">
             {availableMembers.length === 0 ? (
-              <p className="text-gray-400 text-sm">全員配置済み</p>
+              <p className="text-[#8e8e93]/60 text-sm">全員配置済み</p>
             ) : (
               availableMembers.map(member => (
                 <DraggableCarMember key={member.id} member={member} />
@@ -264,12 +284,12 @@ export default function CarManagement({
         {/* Cars */}
         <div className="space-y-4">
           {cars.map((car, carIndex) => (
-            <div key={car.id} className="car-card border border-gray-200">
-              <div className="flex justify-between items-center mb-3">
-                <h3 className="font-semibold text-gray-700">車 {carIndex + 1}</h3>
+            <div key={car.id} className="car-card">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-semibold text-[#1d1d1f] text-lg">🚙 車 {carIndex + 1}</h3>
                 <button
                   onClick={() => handleRemoveCar(car.id)}
-                  className="text-red-500 hover:text-red-700 text-sm"
+                  className="text-[#ff3b30] hover:text-[#ff3b30]/70 text-sm font-medium transition-colors"
                 >
                   削除
                 </button>
@@ -295,7 +315,7 @@ export default function CarManagement({
                     {car.passengers.length > 1 && (
                       <button
                         onClick={() => handleRemovePassengerSlot(car.id, index)}
-                        className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs hover:bg-red-600"
+                        className="absolute -top-2 -right-2 w-6 h-6 bg-[#ff3b30] text-white rounded-full text-xs font-bold hover:bg-[#ff3b30]/80 transition-colors shadow-md"
                       >
                         ×
                       </button>
@@ -306,9 +326,9 @@ export default function CarManagement({
                 {/* Add Passenger Button */}
                 <button
                   onClick={() => handleAddPassengerSlot(car.id)}
-                  className="min-w-[120px] p-2 rounded-lg border-2 border-dashed border-blue-300 bg-blue-50 hover:bg-blue-100 transition-colors flex items-center justify-center"
+                  className="min-w-[130px] p-3 rounded-xl border-2 border-dashed border-[#007aff]/30 bg-[#007aff]/5 hover:bg-[#007aff]/10 transition-all flex items-center justify-center"
                 >
-                  <span className="text-blue-500 font-medium">+ 同乗者</span>
+                  <span className="text-[#007aff] font-semibold text-sm">+ 同乗者</span>
                 </button>
               </div>
             </div>
@@ -317,7 +337,7 @@ export default function CarManagement({
 
         <DragOverlay>
           {activeMember ? (
-            <div className="bg-blue-100 border-2 border-blue-500 rounded-lg px-3 py-2 shadow-lg">
+            <div className="bg-[#007aff]/10 border-2 border-[#007aff] rounded-xl px-4 py-2.5 shadow-lg font-medium text-sm">
               {activeMember.name}
             </div>
           ) : null}
@@ -325,9 +345,11 @@ export default function CarManagement({
       </DndContext>
 
       {cars.length === 0 && (
-        <p className="text-gray-400 text-center py-8">
-          「車を追加」ボタンで車を追加してください
-        </p>
+        <div className="text-center py-12">
+          <p className="text-[#8e8e93] text-base">
+            「車を追加」ボタンで車を追加してください
+          </p>
+        </div>
       )}
     </div>
   );
