@@ -282,7 +282,7 @@ export default function CarManagement({
         </div>
 
         {/* Cars */}
-        <div className="space-y-4">
+        <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
           {cars.map((car, carIndex) => (
             <div key={car.id} className="car-card">
               <div className="flex justify-between items-center mb-4">
