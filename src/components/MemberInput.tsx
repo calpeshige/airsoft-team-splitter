@@ -53,7 +53,8 @@ export default function MemberInput({ onAddMembers, onSplitTeams, hasMembers }: 
         <button
           onClick={onSplitTeams}
           disabled={!hasMembers}
-          className="apple-button apple-button-gradient w-full"
+          className="apple-button w-full"
+          style={{ background: '#ff3b30', boxShadow: '0 4px 12px rgba(255, 59, 48, 0.3)' }}
         >
           チーム分け実行
         </button>

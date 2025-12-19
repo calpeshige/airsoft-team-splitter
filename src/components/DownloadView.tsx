@@ -30,41 +30,40 @@ export default function DownloadView({ redTeam, greenTeam, cars }: DownloadViewP
         <h2 className="text-lg font-bold text-center bg-[#e5e5ea] py-2 border border-[#c7c7cc]">
           チーム編成
         </h2>
-        <div className="grid grid-cols-2 border-l border-r border-b border-[#c7c7cc]">
-          {/* 赤チーム */}
-          <div className="border-r border-[#c7c7cc]">
-            <div className="bg-[#ff3b30] text-white font-bold text-center py-2">
-              赤チーム ({redTeam.length}人)
-            </div>
-            <div className="divide-y divide-[#e5e5ea]">
-              {redTeam.map((member, idx) => (
-                <div key={member.id} className="px-4 py-2 text-center">
-                  {member.name}
+        {(() => {
+          const maxMembers = Math.max(redTeam.length, greenTeam.length, 1);
+          return (
+            <div className="grid grid-cols-2 border-l border-r border-b border-[#c7c7cc]">
+              {/* 赤チーム */}
+              <div className="border-r border-[#c7c7cc]">
+                <div className="bg-[#ff3b30] text-white font-bold text-center py-2">
+                  赤チーム ({redTeam.length}人)
                 </div>
-              ))}
-              {redTeam.length === 0 && (
-                <div className="px-4 py-2 text-center text-[#8e8e93]">-</div>
-              )}
-            </div>
-          </div>
+                <div className="divide-y divide-[#e5e5ea]">
+                  {Array.from({ length: maxMembers }).map((_, idx) => (
+                    <div key={idx} className="px-4 py-2 text-center">
+                      {redTeam[idx] ? redTeam[idx].name : <span className="text-[#8e8e93]">×</span>}
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-          {/* 緑チーム */}
-          <div>
-            <div className="bg-[#34c759] text-white font-bold text-center py-2">
-              緑チーム ({greenTeam.length}人)
-            </div>
-            <div className="divide-y divide-[#e5e5ea]">
-              {greenTeam.map((member, idx) => (
-                <div key={member.id} className="px-4 py-2 text-center">
-                  {member.name}
+              {/* 緑チーム */}
+              <div>
+                <div className="bg-[#34c759] text-white font-bold text-center py-2">
+                  緑チーム ({greenTeam.length}人)
                 </div>
-              ))}
-              {greenTeam.length === 0 && (
-                <div className="px-4 py-2 text-center text-[#8e8e93]">-</div>
-              )}
+                <div className="divide-y divide-[#e5e5ea]">
+                  {Array.from({ length: maxMembers }).map((_, idx) => (
+                    <div key={idx} className="px-4 py-2 text-center">
+                      {greenTeam[idx] ? greenTeam[idx].name : <span className="text-[#8e8e93]">×</span>}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          );
+        })()}
       </div>
 
       {/* 配車 */}
