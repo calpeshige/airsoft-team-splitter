@@ -5,6 +5,7 @@ import { Member, Car } from '@/types';
 import MemberInput from '@/components/MemberInput';
 import TeamSection from '@/components/TeamSection';
 import CarManagement from '@/components/CarManagement';
+import DownloadView from '@/components/DownloadView';
 import { toPng } from 'html-to-image';
 
 export default function Home() {
@@ -15,7 +16,7 @@ export default function Home() {
   const [assignedToCarIds, setAssignedToCarIds] = useState<Set<string>>(new Set());
   const [isDownloading, setIsDownloading] = useState(false);
 
-  const downloadContainerRef = useRef<HTMLDivElement>(null);
+  const downloadViewRef = useRef<HTMLDivElement>(null);
 
   const handleAddMembers = useCallback((newMembers: Member[]) => {
     setAllMembers(prev => [...prev, ...newMembers]);
@@ -76,13 +77,13 @@ export default function Home() {
   }, []);
 
   const handleDownloadAll = async () => {
-    if (!downloadContainerRef.current) return;
+    if (!downloadViewRef.current) return;
 
     setIsDownloading(true);
     try {
-      const dataUrl = await toPng(downloadContainerRef.current, {
+      const dataUrl = await toPng(downloadViewRef.current, {
         quality: 0.95,
-        backgroundColor: '#f5f5f7',
+        backgroundColor: '#ffffff',
         pixelRatio: 2,
       });
 
@@ -116,7 +117,7 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
           {/* Team Section (Left - 3 columns) */}
           <div className="lg:col-span-3">
-            <div ref={downloadContainerRef} className="space-y-6">
+            <div className="space-y-6">
               {/* Teams */}
               <TeamSection
                 redTeam={redTeam}
@@ -125,7 +126,7 @@ export default function Home() {
                 onNameChange={handleNameChange}
               />
 
-              {/* Car Management - included in download */}
+              {/* Car Management */}
               {allMembers.length > 0 && (
                 <CarManagement
                   availableMembers={availableForCars}
@@ -134,6 +135,17 @@ export default function Home() {
                   onRemoveMemberFromCar={handleRemoveMemberFromCar}
                 />
               )}
+            </div>
+
+            {/* Hidden download view for image export */}
+            <div className="absolute left-[-9999px]" aria-hidden="true">
+              <div ref={downloadViewRef}>
+                <DownloadView
+                  redTeam={redTeam}
+                  greenTeam={greenTeam}
+                  cars={cars}
+                />
+              </div>
             </div>
 
             {/* Download Button - outside the download area */}

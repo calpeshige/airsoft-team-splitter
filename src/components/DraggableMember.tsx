@@ -54,7 +54,11 @@ export default function DraggableMember({ member, teamColor, onNameChange }: Dra
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // IME入力中（変換中）はEnterを無視
+    if (e.nativeEvent.isComposing) {
+      return;
+    }
     if (e.key === 'Enter') {
       handleBlur();
     } else if (e.key === 'Escape') {
