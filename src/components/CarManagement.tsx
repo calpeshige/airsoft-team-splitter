@@ -104,6 +104,21 @@ export default function CarManagement({
     onUpdateCars(cars.filter(c => c.id !== carId));
   };
 
+  const handleRemoveDriverFromCar = (carId: string) => {
+    const car = cars.find(c => c.id === carId);
+    if (car?.driver) {
+      onRemoveMemberFromCar(car.driver.id);
+    }
+    onUpdateCars(
+      cars.map(car => {
+        if (car.id === carId) {
+          return { ...car, driver: null };
+        }
+        return car;
+      })
+    );
+  };
+
   const handleAddPassengerSlot = (carId: string) => {
     onUpdateCars(
       cars.map(car => {
@@ -297,12 +312,22 @@ export default function CarManagement({
 
               <div className="flex flex-wrap gap-3 items-start">
                 {/* Driver */}
-                <DroppableSlot
-                  id={`driver-${car.id}`}
-                  member={car.driver}
-                  label="運転手"
-                  isDriver
-                />
+                <div className="relative">
+                  <DroppableSlot
+                    id={`driver-${car.id}`}
+                    member={car.driver}
+                    label="運転手"
+                    isDriver
+                  />
+                  {car.driver && (
+                    <button
+                      onClick={() => handleRemoveDriverFromCar(car.id)}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-[#ff3b30] text-white rounded-full text-xs font-bold hover:bg-[#ff3b30]/80 transition-colors shadow-md"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
 
                 {/* Passengers */}
                 {car.passengers.map((passenger, index) => (
@@ -312,14 +337,12 @@ export default function CarManagement({
                       member={passenger}
                       label={`同乗者 ${index + 1}`}
                     />
-                    {car.passengers.length > 1 && (
-                      <button
-                        onClick={() => handleRemovePassengerSlot(car.id, index)}
-                        className="absolute -top-2 -right-2 w-6 h-6 bg-[#ff3b30] text-white rounded-full text-xs font-bold hover:bg-[#ff3b30]/80 transition-colors shadow-md"
-                      >
-                        ×
-                      </button>
-                    )}
+                    <button
+                      onClick={() => handleRemovePassengerSlot(car.id, index)}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-[#ff3b30] text-white rounded-full text-xs font-bold hover:bg-[#ff3b30]/80 transition-colors shadow-md"
+                    >
+                      ×
+                    </button>
                   </div>
                 ))}
 

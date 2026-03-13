@@ -30,18 +30,18 @@ export default function MemberInput({ onAddMembers, onSplitTeams, hasMembers }: 
   };
 
   return (
-    <div className="apple-card p-6 h-full">
+    <div className="apple-card p-6">
       <h2 className="section-header text-xl mb-1">メンバー入力</h2>
-      <p className="section-subheader text-sm mb-4">1行に1人ずつ入力</p>
+      <p className="section-subheader text-sm mb-3">1行に1人ずつ入力</p>
 
       <textarea
         value={inputText}
         onChange={(e) => setInputText(e.target.value)}
         placeholder="メンバー名を入力&#10;&#10;例:&#10;田中太郎&#10;鈴木一郎&#10;佐藤花子"
-        className="apple-input w-full h-48 resize-none"
+        className="apple-input w-full h-28 resize-none"
       />
 
-      <div className="mt-5 space-y-3">
+      <div className="mt-3 space-y-2">
         <button
           onClick={handleAddMembers}
           disabled={!inputText.trim()}
