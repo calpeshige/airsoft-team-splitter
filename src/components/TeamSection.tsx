@@ -12,10 +12,11 @@ interface TeamSectionProps {
   onMoveToTeam: (memberId: string, targetTeam: 'red' | 'green') => void;
   onReorderTeam: (team: 'red' | 'green', members: Member[]) => void;
   onNameChange?: (memberId: string, newName: string) => void;
+  onDeleteMember?: (memberId: string) => void;
   downloadRef?: React.RefObject<HTMLDivElement | null>;
 }
 
-export default function TeamSection({ redTeam, greenTeam, onMoveToTeam, onReorderTeam, onNameChange, downloadRef }: TeamSectionProps) {
+export default function TeamSection({ redTeam, greenTeam, onMoveToTeam, onReorderTeam, onNameChange, onDeleteMember, downloadRef }: TeamSectionProps) {
   const [activeMember, setActiveMember] = useState<Member | null>(null);
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -72,6 +73,7 @@ export default function TeamSection({ redTeam, greenTeam, onMoveToTeam, onReorde
             teamColor="red"
             members={redTeam}
             onNameChange={onNameChange}
+            onDeleteMember={onDeleteMember}
           />
           <DroppableTeam
             id="green"
@@ -79,6 +81,7 @@ export default function TeamSection({ redTeam, greenTeam, onMoveToTeam, onReorde
             teamColor="green"
             members={greenTeam}
             onNameChange={onNameChange}
+            onDeleteMember={onDeleteMember}
           />
         </div>
 

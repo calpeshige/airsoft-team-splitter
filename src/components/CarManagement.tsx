@@ -9,6 +9,7 @@ interface CarManagementProps {
   cars: Car[];
   onUpdateCars: (cars: Car[]) => void;
   onRemoveMemberFromCar: (memberId: string) => void;
+  onDeleteMember?: (memberId: string) => void;
   downloadRef?: React.RefObject<HTMLDivElement | null>;
 }
 
@@ -50,7 +51,7 @@ function DroppableSlot({
   );
 }
 
-function DraggableCarMember({ member }: { member: Member }) {
+function DraggableCarMember({ member, onDeleteMember }: { member: Member; onDeleteMember?: (memberId: string) => void }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `car-${member.id}`,
     data: { member, fromCar: true },
@@ -66,11 +67,24 @@ function DraggableCarMember({ member }: { member: Member }) {
       style={style}
       {...listeners}
       {...attributes}
-      className={`bg-white border border-[#e5e5ea] rounded-xl px-4 py-2.5 cursor-grab shadow-sm hover:shadow-md transition-all font-medium text-sm ${
+      className={`bg-white border border-[#e5e5ea] rounded-xl px-4 py-2.5 cursor-grab shadow-sm hover:shadow-md transition-all font-medium text-sm flex items-center gap-2 ${
         isDragging ? 'opacity-50 shadow-lg' : ''
       }`}
     >
-      {member.name}
+      <span>{member.name}</span>
+      {onDeleteMember && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onDeleteMember(member.id); }}
+          onPointerDown={(e) => e.stopPropagation()}
+          className="text-[#8e8e93] hover:text-[#ff3b30] transition-colors flex-shrink-0"
+          title="メンバーを削除"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      )}
     </div>
   );
 }
@@ -80,6 +94,7 @@ export default function CarManagement({
   cars,
   onUpdateCars,
   onRemoveMemberFromCar,
+  onDeleteMember,
   downloadRef,
 }: CarManagementProps) {
   const [activeMember, setActiveMember] = useState<Member | null>(null);
@@ -290,7 +305,7 @@ export default function CarManagement({
               <p className="text-[#8e8e93]/60 text-sm">全員配置済み</p>
             ) : (
               availableMembers.map(member => (
-                <DraggableCarMember key={member.id} member={member} />
+                <DraggableCarMember key={member.id} member={member} onDeleteMember={onDeleteMember} />
               ))
             )}
           </div>

@@ -9,9 +9,10 @@ interface DraggableMemberProps {
   member: Member;
   teamColor?: 'red' | 'green' | null;
   onNameChange?: (memberId: string, newName: string) => void;
+  onDeleteMember?: (memberId: string) => void;
 }
 
-export default function DraggableMember({ member, teamColor, onNameChange }: DraggableMemberProps) {
+export default function DraggableMember({ member, teamColor, onNameChange, onDeleteMember }: DraggableMemberProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(member.name);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -101,17 +102,32 @@ export default function DraggableMember({ member, teamColor, onNameChange }: Dra
       ) : (
         <>
           <span className="flex-1 select-none">{member.name}</span>
-          <button
-            onClick={handleEditClick}
-            onPointerDown={(e) => e.stopPropagation()}
-            className="text-[#8e8e93] hover:text-[#007aff] p-1 rounded transition-colors"
-            title="名前を編集"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
-              <path d="m15 5 4 4"/>
-            </svg>
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleEditClick}
+              onPointerDown={(e) => e.stopPropagation()}
+              className="text-[#8e8e93] hover:text-[#007aff] p-1 rounded transition-colors"
+              title="名前を編集"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                <path d="m15 5 4 4"/>
+              </svg>
+            </button>
+            {onDeleteMember && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onDeleteMember(member.id); }}
+                onPointerDown={(e) => e.stopPropagation()}
+                className="text-[#8e8e93] hover:text-[#ff3b30] p-1 rounded transition-colors"
+                title="メンバーを削除"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            )}
+          </div>
         </>
       )}
     </div>

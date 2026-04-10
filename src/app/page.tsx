@@ -132,6 +132,22 @@ export default function Home() {
     }
   }, [redTeam, greenTeam]);
 
+  const handleDeleteMember = useCallback((memberId: string) => {
+    setAllMembers(prev => prev.filter(m => m.id !== memberId));
+    setRedTeam(prev => prev.filter(m => m.id !== memberId));
+    setGreenTeam(prev => prev.filter(m => m.id !== memberId));
+    setCars(prev => prev.map(car => ({
+      ...car,
+      driver: car.driver?.id === memberId ? null : car.driver,
+      passengers: car.passengers.map(p => p?.id === memberId ? null : p),
+    })));
+    setAssignedToCarIds(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(memberId);
+      return newSet;
+    });
+  }, []);
+
   const handleNameChange = useCallback((memberId: string, newName: string) => {
     setAllMembers(prev => prev.map(m => m.id === memberId ? { ...m, name: newName } : m));
     setRedTeam(prev => prev.map(m => m.id === memberId ? { ...m, name: newName } : m));
@@ -223,6 +239,7 @@ export default function Home() {
                 onMoveToTeam={handleMoveToTeam}
                 onReorderTeam={handleReorderTeam}
                 onNameChange={handleNameChange}
+                onDeleteMember={handleDeleteMember}
               />
 
               {/* Car Management */}
@@ -232,6 +249,7 @@ export default function Home() {
                   cars={cars}
                   onUpdateCars={handleUpdateCars}
                   onRemoveMemberFromCar={handleRemoveMemberFromCar}
+                  onDeleteMember={handleDeleteMember}
                 />
               )}
             </div>

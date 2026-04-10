@@ -11,9 +11,10 @@ interface DroppableTeamProps {
   teamColor: 'red' | 'green';
   members: Member[];
   onNameChange?: (memberId: string, newName: string) => void;
+  onDeleteMember?: (memberId: string) => void;
 }
 
-export default function DroppableTeam({ id, teamName, teamColor, members, onNameChange }: DroppableTeamProps) {
+export default function DroppableTeam({ id, teamName, teamColor, members, onNameChange, onDeleteMember }: DroppableTeamProps) {
   const { isOver, setNodeRef } = useDroppable({
     id,
   });
@@ -55,6 +56,7 @@ export default function DroppableTeam({ id, teamName, teamColor, members, onName
                   member={member}
                   teamColor={teamColor}
                   onNameChange={onNameChange}
+                  onDeleteMember={onDeleteMember}
                 />
               ))}
             </div>
