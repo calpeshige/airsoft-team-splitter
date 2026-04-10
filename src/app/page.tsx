@@ -66,14 +66,55 @@ export default function Home() {
 
   const handleAddMembers = useCallback((newMembers: Member[]) => {
     setAllMembers(prev => [...prev, ...newMembers]);
-  }, []);
+
+    // 新メンバーを既存チーム人数のバランスを見て振り分け
+    const shuffled = [...newMembers].sort(() => Math.random() - 0.5);
+    const toRed: Member[] = [];
+    const toGreen: Member[] = [];
+    let redCount = redTeam.length;
+    let greenCount = greenTeam.length;
+
+    for (const member of shuffled) {
+      if (redCount < greenCount) {
+        toRed.push(member);
+        redCount++;
+      } else if (greenCount < redCount) {
+        toGreen.push(member);
+        greenCount++;
+      } else {
+        if (Math.random() < 0.5) {
+          toRed.push(member);
+          redCount++;
+        } else {
+          toGreen.push(member);
+          greenCount++;
+        }
+      }
+    }
+
+    if (toRed.length > 0) setRedTeam(prev => [...prev, ...toRed]);
+    if (toGreen.length > 0) setGreenTeam(prev => [...prev, ...toGreen]);
+  }, [redTeam.length, greenTeam.length]);
 
   const handleSplitTeams = useCallback(() => {
+    if (redTeam.length > 0 || greenTeam.length > 0) {
+      if (!confirm('現在のチーム分けをリセットして、全員をランダムに振り分け直しますか？')) {
+        return;
+      }
+    }
     const shuffled = [...allMembers].sort(() => Math.random() - 0.5);
     const midpoint = Math.ceil(shuffled.length / 2);
     setRedTeam(shuffled.slice(0, midpoint));
     setGreenTeam(shuffled.slice(midpoint));
-  }, [allMembers]);
+  }, [allMembers, redTeam.length, greenTeam.length]);
+
+  const handleReorderTeam = useCallback((team: 'red' | 'green', members: Member[]) => {
+    if (team === 'red') {
+      setRedTeam(members);
+    } else {
+      setGreenTeam(members);
+    }
+  }, []);
 
   const handleMoveToTeam = useCallback((memberId: string, targetTeam: 'red' | 'green') => {
     const memberFromRed = redTeam.find(m => m.id === memberId);
@@ -180,6 +221,7 @@ export default function Home() {
                 redTeam={redTeam}
                 greenTeam={greenTeam}
                 onMoveToTeam={handleMoveToTeam}
+                onReorderTeam={handleReorderTeam}
                 onNameChange={handleNameChange}
               />
 

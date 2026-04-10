@@ -1,6 +1,7 @@
 'use client';
 
 import { useDroppable } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Member } from '@/types';
 import DraggableMember from './DraggableMember';
 
@@ -19,7 +20,6 @@ export default function DroppableTeam({ id, teamName, teamColor, members, onName
 
   const teamStyles = teamColor === 'red' ? 'team-red' : 'team-green';
   const headerBg = teamColor === 'red' ? 'bg-[#ff3b30]' : 'bg-[#34c759]';
-  const badgeClass = teamColor === 'red' ? 'badge badge-red' : 'badge badge-green';
 
   return (
     <div
@@ -47,16 +47,18 @@ export default function DroppableTeam({ id, teamName, teamColor, members, onName
             </p>
           </div>
         ) : (
-          <div className="space-y-2">
-            {members.map((member) => (
-              <DraggableMember
-                key={member.id}
-                member={member}
-                teamColor={teamColor}
-                onNameChange={onNameChange}
-              />
-            ))}
-          </div>
+          <SortableContext items={members.map(m => m.id)} strategy={verticalListSortingStrategy}>
+            <div className="space-y-2">
+              {members.map((member) => (
+                <DraggableMember
+                  key={member.id}
+                  member={member}
+                  teamColor={teamColor}
+                  onNameChange={onNameChange}
+                />
+              ))}
+            </div>
+          </SortableContext>
         )}
       </div>
     </div>

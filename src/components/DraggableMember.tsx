@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useDraggable } from '@dnd-kit/core';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { Member } from '@/types';
 
 interface DraggableMemberProps {
@@ -15,17 +16,23 @@ export default function DraggableMember({ member, teamColor, onNameChange }: Dra
   const [editName, setEditName] = useState(member.name);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
     id: member.id,
-    data: { member },
+    data: { member, teamColor },
     disabled: isEditing,
   });
 
-  const style = transform
-    ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-      }
-    : undefined;
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
 
   const getBorderStyle = () => {
     if (teamColor === 'red') return 'border-l-4 border-l-[#ff3b30]';
@@ -40,7 +47,6 @@ export default function DraggableMember({ member, teamColor, onNameChange }: Dra
     }
   }, [isEditing]);
 
-  // Update editName when member.name changes externally
   useEffect(() => {
     setEditName(member.name);
   }, [member.name]);
@@ -55,7 +61,6 @@ export default function DraggableMember({ member, teamColor, onNameChange }: Dra
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    // IME入力中（変換中）はEnterを無視
     if (e.nativeEvent.isComposing) {
       return;
     }
@@ -80,7 +85,7 @@ export default function DraggableMember({ member, teamColor, onNameChange }: Dra
       style={style}
       {...(isEditing ? {} : listeners)}
       {...(isEditing ? {} : attributes)}
-      className={`member-card ${getBorderStyle()} ${isDragging ? 'dragging' : ''} ${isEditing ? 'editing' : ''} flex items-center justify-between gap-2`}
+      className={`member-card ${getBorderStyle()} ${isDragging ? 'dragging opacity-50' : ''} ${isEditing ? 'editing' : ''} flex items-center justify-between gap-2`}
     >
       {isEditing ? (
         <input
