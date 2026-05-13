@@ -15,9 +15,6 @@ export default function DownloadView({ redTeam, greenTeam, cars }: DownloadViewP
     passengers: car.passengers.filter(p => p !== null).map(p => p!.name),
   }));
 
-  // 同乗者の最大数を計算
-  const maxPassengers = Math.max(1, ...carData.map(c => c.passengers.length));
-
   return (
     <div className="bg-white p-8 min-w-[600px]">
       {/* タイトル */}
@@ -72,42 +69,44 @@ export default function DownloadView({ redTeam, greenTeam, cars }: DownloadViewP
           <h2 className="text-lg font-bold text-center bg-[#e5e5ea] py-2 border border-[#c7c7cc]">
             配車
           </h2>
-          <table className="w-full border-collapse border border-[#c7c7cc]">
-            <thead>
-              <tr className="bg-[#f2f2f7]">
-                <th className="border border-[#c7c7cc] px-4 py-2 text-center font-bold w-1/3">
-                  運転手
-                </th>
-                <th className="border border-[#c7c7cc] px-4 py-2 text-center font-bold" colSpan={maxPassengers}>
-                  同乗者
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {carData.map((car, idx) => (
-                <tr key={idx}>
-                  <td className="border border-[#c7c7cc] px-4 py-3 text-center font-medium">
-                    {car.driver}
-                  </td>
+          <div className="border-l border-r border-b border-[#c7c7cc]">
+            {/* ヘッダー行 */}
+            <div className="flex bg-[#f2f2f7] border-b border-[#c7c7cc]">
+              <div className="w-1/3 px-4 py-2 text-center font-bold border-r border-[#c7c7cc]">
+                運転手
+              </div>
+              <div className="flex-1 px-4 py-2 text-center font-bold">
+                同乗者
+              </div>
+            </div>
+            {/* データ行 */}
+            {carData.map((car, idx) => (
+              <div
+                key={idx}
+                className={`flex ${idx < carData.length - 1 ? 'border-b border-[#c7c7cc]' : ''}`}
+              >
+                <div className="w-1/3 px-4 py-3 text-center font-medium border-r border-[#c7c7cc] flex items-center justify-center">
+                  {car.driver}
+                </div>
+                <div className="flex-1 flex">
                   {car.passengers.length > 0 ? (
                     car.passengers.map((passenger, pIdx) => (
-                      <td
+                      <div
                         key={pIdx}
-                        className="border border-[#c7c7cc] px-4 py-3 text-center"
-                        colSpan={pIdx === car.passengers.length - 1 ? maxPassengers - pIdx : 1}
+                        className={`flex-1 px-4 py-3 text-center ${pIdx < car.passengers.length - 1 ? 'border-r border-[#c7c7cc]' : ''}`}
                       >
                         {passenger}
-                      </td>
+                      </div>
                     ))
                   ) : (
-                    <td className="border border-[#c7c7cc] px-4 py-3 text-center text-[#8e8e93]" colSpan={maxPassengers}>
+                    <div className="flex-1 px-4 py-3 text-center text-[#8e8e93]">
                       -
-                    </td>
+                    </div>
                   )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
