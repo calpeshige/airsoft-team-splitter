@@ -47,7 +47,7 @@ export default function DownloadView({ redTeam, greenTeam, cars }: DownloadViewP
 
               {/* 白チーム: 白背景＋濃い文字＋グレー下線で、チーム編成の見出し帯と区別 */}
               <div>
-                <div className="bg-white text-[#1d1d1f] font-bold text-center py-2 border-b-2 border-[#8e8e93]">
+                <div className="bg-white text-[#1d1d1f] font-bold text-center py-2 border-b border-[#c7c7cc]">
                   白チーム ({greenTeam.length}人)
                 </div>
                 <div className="divide-y divide-[#e5e5ea]">

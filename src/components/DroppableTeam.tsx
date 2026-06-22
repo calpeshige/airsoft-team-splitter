@@ -23,7 +23,7 @@ export default function DroppableTeam({ id, teamName, teamColor, members, onName
   // 白チームは白背景＋濃い文字＋グレー下線で表現（チーム編成の見出し帯と色が被らないように）
   const headerClass = teamColor === 'red'
     ? 'bg-[#ff3b30] text-white'
-    : 'bg-white text-[#1d1d1f] border-b-2 border-[#8e8e93]';
+    : 'bg-white text-[#1d1d1f] border-b border-[#c7c7cc]';
   const countClass = teamColor === 'red' ? 'bg-white/20' : 'bg-black/10';
 
   return (
