@@ -20,10 +20,10 @@ export default function DroppableTeam({ id, teamName, teamColor, members, onName
   });
 
   const teamStyles = teamColor === 'red' ? 'team-red' : 'team-green';
-  // 白チームは白背景だと文字が読めないため、薄グレー帯＋濃い文字で表現
+  // 白チームは白背景＋濃い文字＋グレー下線で表現（チーム編成の見出し帯と色が被らないように）
   const headerClass = teamColor === 'red'
     ? 'bg-[#ff3b30] text-white'
-    : 'bg-[#e5e5ea] text-[#1d1d1f] border-b border-[#c7c7cc]';
+    : 'bg-white text-[#1d1d1f] border-b-2 border-[#8e8e93]';
   const countClass = teamColor === 'red' ? 'bg-white/20' : 'bg-black/10';
 
   return (
