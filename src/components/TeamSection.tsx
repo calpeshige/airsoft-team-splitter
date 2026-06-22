@@ -77,7 +77,7 @@ export default function TeamSection({ redTeam, greenTeam, onMoveToTeam, onReorde
           />
           <DroppableTeam
             id="green"
-            teamName="緑チーム"
+            teamName="白チーム"
             teamColor="green"
             members={greenTeam}
             onNameChange={onNameChange}

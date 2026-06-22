@@ -37,7 +37,7 @@ export default function DraggableMember({ member, teamColor, onNameChange, onDel
 
   const getBorderStyle = () => {
     if (teamColor === 'red') return 'border-l-4 border-l-[#ff3b30]';
-    if (teamColor === 'green') return 'border-l-4 border-l-[#34c759]';
+    if (teamColor === 'green') return 'border-l-4 border-l-[#8e8e93]';
     return '';
   };
 

@@ -327,7 +327,7 @@ export default function Home() {
                     <span className="badge badge-red">{redTeam.length}人</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-[#8e8e93]">緑チーム</span>
+                    <span className="text-[#8e8e93]">白チーム</span>
                     <span className="badge badge-green">{greenTeam.length}人</span>
                   </div>
                 </div>

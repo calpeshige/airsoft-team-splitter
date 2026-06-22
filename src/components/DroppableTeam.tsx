@@ -20,7 +20,11 @@ export default function DroppableTeam({ id, teamName, teamColor, members, onName
   });
 
   const teamStyles = teamColor === 'red' ? 'team-red' : 'team-green';
-  const headerBg = teamColor === 'red' ? 'bg-[#ff3b30]' : 'bg-[#34c759]';
+  // 白チームは白背景だと文字が読めないため、薄グレー帯＋濃い文字で表現
+  const headerClass = teamColor === 'red'
+    ? 'bg-[#ff3b30] text-white'
+    : 'bg-[#e5e5ea] text-[#1d1d1f] border-b border-[#c7c7cc]';
+  const countClass = teamColor === 'red' ? 'bg-white/20' : 'bg-black/10';
 
   return (
     <div
@@ -29,12 +33,12 @@ export default function DroppableTeam({ id, teamName, teamColor, members, onName
         isOver ? 'ring-4 ring-[#007aff]/40' : ''
       }`}
     >
-      <div className={`${headerBg} text-white py-4 px-5`}>
+      <div className={`${headerClass} py-4 px-5`}>
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold tracking-tight">
             {teamName}
           </h3>
-          <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium">
+          <span className={`${countClass} px-3 py-1 rounded-full text-sm font-medium`}>
             {members.length}人
           </span>
         </div>

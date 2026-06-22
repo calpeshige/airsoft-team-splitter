@@ -45,10 +45,10 @@ export default function DownloadView({ redTeam, greenTeam, cars }: DownloadViewP
                 </div>
               </div>
 
-              {/* 緑チーム */}
+              {/* 白チーム: 白だと読めないので薄グレー帯＋濃い文字 */}
               <div>
-                <div className="bg-[#34c759] text-white font-bold text-center py-2">
-                  緑チーム ({greenTeam.length}人)
+                <div className="bg-[#e5e5ea] text-[#1d1d1f] font-bold text-center py-2">
+                  白チーム ({greenTeam.length}人)
                 </div>
                 <div className="divide-y divide-[#e5e5ea]">
                   {Array.from({ length: maxMembers }).map((_, idx) => (
